@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Личный кабинет — BookHaven</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://kit.fontawesome.com/a2d9d5b6b5.js" crossorigin="anonymous"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #fdf8f3;
+            color: #3b2f1d;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ===== HEADER ===== */
+        header {
+            background: #fffaf2;
+            border-bottom: 2px solid #e4c59e;
+            box-shadow: 0 2px 6px rgba(139,69,19,0.1);
+        }
+
+        .navbar-custom {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 3rem;
+        }
+
+        .nav-left, .nav-right {
+            flex: 1;
+            display: flex;
+            align-items: center;
+        }
+
+        .nav-left { justify-content: flex-start; }
+        .nav-right { justify-content: flex-end; }
+
+        .nav-logo {
+            flex: 0;
+            text-align: center;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #b96a24;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .nav-left a, .nav-right a {
+            color: #3b2f1d;
+            text-decoration: none;
+            font-weight: 500;
+            transition: 0.3s;
+        }
+
+        .nav-left a:hover, .nav-right a:hover {
+            color: #b96a24;
+        }
+
+        .user-mini {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            margin-right: 1rem;
+            font-size: 0.9rem;
+        }
+        .user-mini strong {
+            color: #8b4513;
+        }
+        .user-mini span {
+            font-style: italic;
+            color: #a45c1f;
+        }
+
+        .btn-logout {
+            background: none;
+            border: 1px solid #b96a24;
+            color: #b96a24;
+            padding: 0.3rem 0.7rem;
+            border-radius: 6px;
+            transition: 0.3s;
+        }
+        .btn-logout:hover {
+            background: #b96a24;
+            color: #fff;
+        }
+
+        /* ===== MAIN ===== */
+        .container {
+            max-width: 1100px;
+            margin: 2.5rem auto;
+            text-align: center;
+        }
+
+        h1 {
+            color: #8b4513;
+            margin-bottom: 1rem;
+        }
+
+        /* ===== HERO / CATALOG BLOCK ===== */
+        .catalog-hero {
+            background: linear-gradient(135deg, #b96a24 0%, #e6b16a 100%);
+            color: #fff;
+            padding: 3rem 2rem;
+            border-radius: 20px;
+            box-shadow: 0 8px 20px rgba(185,106,36,0.3);
+            margin-bottom: 2rem;
+        }
+        .catalog-hero i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        .catalog-hero h2 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+        .catalog-hero p {
+            font-size: 1.1rem;
+            color: rgba(255,255,255,0.9);
+            margin-bottom: 1.5rem;
+        }
+        .catalog-hero .btn-main {
+            background: #fff;
+            color: #b96a24;
+            font-weight: 600;
+            padding: 0.8rem 1.8rem;
+            border-radius: 30px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        .catalog-hero .btn-main:hover {
+            background: #f3e2c2;
+            color: #8c4d18;
+        }
+
+        /* ===== DASHBOARD BLOCKS ===== */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .info-block {
+            background: linear-gradient(145deg, #fffaf2, #f8eeda);
+            border: 1px solid #e3cfa8;
+            border-radius: 14px;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: 0 3px 10px rgba(139,69,19,0.1);
+            transition: all 0.3s;
+        }
+
+        .info-block:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 6px 18px rgba(139,69,19,0.15);
+        }
+
+        .info-block i {
+            font-size: 2rem;
+            color: #b5742e;
+            margin-bottom: 0.5rem;
+        }
+
+        .info-block h3 {
+            color: #8b4513;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        .info-block p {
+            color: #7a5b34;
+            margin-bottom: 1rem;
+        }
+
+        .btn-main {
+            background: #b96a24;
+            border: none;
+            color: #fff;
+            padding: 0.6rem 1rem;
+            border-radius: 8px;
+            transition: 0.3s;
+        }
+        .btn-main:hover {
+            background: #8c4d18;
+        }
+
+        /* ===== MODALS ===== */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0; top: 0;
+            width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.4);
+        }
+
+        .modal-content {
+            background: #fffaf2;
+            color: #3b2f1d;
+            border-radius: 12px;
+            border: 1px solid #d2b48c;
+            padding: 1.5rem;
+            margin: 5% auto;
+            width: 80%; max-width: 600px; max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 4px 20px rgba(139,69,19,0.2);
+        }
+
+        .cart-item, .order-item {
+            background: #fff3e0;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 0.7rem;
+            border-left: 4px solid #c07a28;
+        }
+
+        .modal-footer { text-align: right; margin-top: 1rem; }
+
+        /* ===== FOOTER ===== */
+        footer {
+            background: #fff5e6;
+            color: #7a5b34;
+            text-align: center;
+            padding: 1rem;
+            border-top: 2px solid #e5cdaa;
+            margin-top: auto;
+        }
+    </style>
+</head>
+
+<body>
+<header>
+    <div class="navbar-custom">
+        <div class="nav-left">
+            <a th:href="@{/products}"><i class="fa-solid fa-book-open"></i> Каталог</a>
+        </div>
+
+        <div class="nav-logo">
+            <i class="fa-solid fa-book"></i> BookHaven
+        </div>
+
+        <div class="nav-right">
+            <div class="user-mini">
+                <strong sec:authentication="name"></strong>
+            </div>
+            <form th:action="@{/logout}" method="post" style="display:inline;">
+                <button type="submit" class="btn-logout">Выход</button>
+            </form>
+        </div>
+    </div>
+</header>
+
+<main class="container">
+    <h1><i class="fa-solid fa-user-gear"></i> Личный кабинет</h1>
+
+    <!-- ===== БОЛЬШАЯ КАРТОЧКА КАТАЛОГА ===== -->
+    <section class="catalog-hero">
+        <i class="fa-solid fa-book-open"></i>
+        <h2>Каталог книг BookHaven</h2>
+        <p>Погрузитесь в мир вдохновения и знаний. Выберите историю, которая станет частью вашей жизни.</p>
+        <a th:href="@{/products}" class="btn-main"><i class="fa-solid fa-book"></i> Перейти в каталог</a>
+    </section>
+
+    <!-- ===== МАЛЫЕ КАРТОЧКИ ===== -->
+    <div class="dashboard-grid">
+        <div class="info-block">
+            <i class="fa-solid fa-cart-shopping"></i>
+            <h3>Корзина</h3>
+            <p>Ваши выбранные книги</p>
+            <button class="btn-main" onclick="openCart()">Открыть</button>
+        </div>
+
+        <div class="info-block">
+            <i class="fa-solid fa-receipt"></i>
+            <h3>Заказы</h3>
+            <p>История ваших покупок</p>
+            <button class="btn-main" onclick="openOrders()">Мои заказы</button>
+        </div>
+    </div>
+</main>
+
+<!-- === МОДАЛКИ === -->
+<div id="cartModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeCart()">&times;</span>
+        <h2>Корзина</h2>
+        <div id="cartItems"></div>
+        <div class="modal-footer">
+            <p id="cartTotal"><strong>Итого: 0 ₽</strong></p>
+            <button class="btn-main" onclick="createOrder()">Оформить заказ</button>
+        </div>
+    </div>
+</div>
+
+<div id="ordersModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeOrders()">&times;</span>
+        <h2>Заказы</h2>
+        <div id="ordersList"></div>
+    </div>
+</div>
+
+<footer>
+    <p>© 2025 BookHaven | Личный кабинет</p>
+</footer>
+
+<script>
+    function openCart(){document.getElementById('cartModal').style.display='block';loadCart();}
+    function closeCart(){document.getElementById('cartModal').style.display='none';}
+    function loadCart(){
+        fetch('/api/cart').then(r=>r.json()).then(data=>{
+            const itemsDiv=document.getElementById('cartItems');let total=0;itemsDiv.innerHTML='';
+            if(!data||data.length===0){itemsDiv.innerHTML=`<p class="text-muted">Корзина пуста.</p>`;}
+            else{data.forEach(item=>{total+=item.subtotal;itemsDiv.innerHTML+=`
+                <div class="cart-item">
+                    <p><strong>${item.bookTitle}</strong> — ${item.quantity} шт. × ${item.price} ₽</p>
+                    <p><small>${item.authorName}, ${item.publisherName}</small></p>
+                    <button class="btn btn-danger btn-sm" onclick="removeFromCart(${item.id})">Удалить</button>
+                </div>`;});}
+            document.getElementById('cartTotal').innerHTML=`<strong>Итого: ${total} ₽</strong>`;
+        });
+    }
+    function removeFromCart(id){fetch(`/api/cart/${id}`,{method:'DELETE'}).then(()=>loadCart());}
+    function createOrder(){
+        fetch('/api/orders',{method:'POST'}).then(r=>{
+            if(r.ok){alert('Заказ оформлен!');loadCart();closeCart();}
+            else alert('Ошибка оформления заказа');
+        });
+    }
+    function openOrders(){
+        document.getElementById('ordersModal').style.display='block';
+        fetch('/api/orders/my').then(r=>r.json()).then(data=>{
+            const list=document.getElementById('ordersList');
+            if(!data||data.length===0){list.innerHTML=`<p class="text-muted">У вас пока нет заказов.</p>`;}
+            else{list.innerHTML=data.map(o=>`
+                <div class="order-item">
+                    <h5>Заказ #${o.id} — ${o.totalAmount} ₽</h5>
+                    <p>Статус: ${o.status}</p>
+                    <p>Дата: ${o.orderDate}</p>
+                </div>`).join('');}
+        });
+    }
+    function closeOrders(){document.getElementById('ordersModal').style.display='none';}
+    window.onclick=e=>['cartModal','ordersModal'].forEach(id=>{const m=document.getElementById(id);if(e.target===m)m.style.display='none';});
+</script>
+</body>
+</html>

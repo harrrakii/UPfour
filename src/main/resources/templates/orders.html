@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BookHaven — Управление заказами</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://kit.fontawesome.com/a2d9d5b6b5.js" crossorigin="anonymous"></script>
+
+    <style>
+        body {
+            background: #f8f3ec;
+            color: #3b2f1d;
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ===== HEADER ===== */
+        header {
+            background: #fffaf2;
+            border-bottom: 2px solid #e4c59e;
+            box-shadow: 0 2px 6px rgba(139,69,19,0.1);
+        }
+        .navbar-admin {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 3rem;
+        }
+        .nav-left a {
+            color: #3b2f1d;
+            text-decoration: none;
+            font-weight: 500;
+            transition: 0.3s;
+        }
+        .nav-left a:hover { color: #b96a24; }
+        .nav-logo {
+            font-size: 1.7rem;
+            font-weight: 700;
+            color: #b96a24;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .btn-logout {
+            background: none;
+            border: 1px solid #b96a24;
+            color: #b96a24;
+            padding: 0.35rem 0.8rem;
+            border-radius: 6px;
+            transition: 0.3s;
+        }
+        .btn-logout:hover { background: #b96a24; color: #fff; }
+
+        /* ===== PAGE HEADER ===== */
+        .page-header {
+            text-align: center;
+            margin: 2rem 0 1rem;
+        }
+        .page-header h2 {
+            color: #8b4513;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        .page-header p {
+            color: #7a5b34;
+        }
+
+        /* ===== TABLE ===== */
+        .table-container {
+            width: 90%;
+            max-width: 1100px;
+            margin: 0 auto 4rem;
+            background: #fffaf2;
+            border: 1px solid #e4c59e;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 12px rgba(139,69,19,0.1);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        th {
+            background: #f5e8d8;
+            color: #8b4513;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            padding: 0.75rem;
+            border-bottom: 1px solid #e4c59e;
+        }
+        td {
+            padding: 0.75rem;
+            border-bottom: 1px solid #f0e2c9;
+            text-align: center;
+        }
+        tr:hover { background: #fff5e6; }
+
+        .status {
+            font-weight: 600;
+        }
+        .status-new { color: #b96a24; }
+        .status-process { color: #b87333; }
+        .status-done { color: #2e7d32; }
+        .status-cancel { color: #b33a3a; }
+
+        /* ===== BUTTONS ===== */
+        .btn-action {
+            font-size: 0.9rem;
+            padding: 0.3rem 0.8rem;
+            border-radius: 6px;
+            transition: 0.3s;
+            border: 1px solid transparent;
+            cursor: pointer;
+        }
+        .btn-edit {
+            color: #8b4513;
+            border-color: #d4a86a;
+            background-color: #fff8ef;
+        }
+        .btn-edit:hover { background-color: #d4a86a; color: #fff; }
+
+        .btn-delete {
+            color: #a33636;
+            border-color: #d18b8b;
+            background-color: #fff8ef;
+        }
+        .btn-delete:hover { background-color: #d18b8b; color: #fff; }
+
+        /* ===== FOOTER ===== */
+        footer {
+            text-align: center;
+            color: #7a5b34;
+            padding: 1rem;
+            background: #fff5e6;
+            border-top: 2px solid #e5cdaa;
+            margin-top: auto;
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- ===== HEADER ===== -->
+<header>
+    <div class="navbar-admin">
+        <div class="nav-left">
+            <a th:href="@{/manager/dashboard}"><i class="fa-solid fa-house"></i> Главная</a>
+        </div>
+        <div class="nav-logo">
+            <i class="fa-solid fa-book"></i> BookHaven Manager
+        </div>
+        <div class="nav-right" sec:authorize="isAuthenticated()">
+            <form th:action="@{/logout}" method="post" style="display:inline;">
+                <button type="submit" class="btn-logout">
+                    <i class="fa-solid fa-right-from-bracket"></i> Выйти
+                </button>
+            </form>
+        </div>
+    </div>
+</header>
+
+<!-- ===== PAGE HEADER ===== -->
+<div class="page-header">
+    <h2><i class="fa-solid fa-clipboard-list"></i> Управление заказами</h2>
+    <p>Просмотр и изменение статусов заказов клиентов</p>
+</div>
+
+<!-- ===== TABLE ===== -->
+<div class="table-container">
+    <table>
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Покупатель</th>
+            <th>Дата</th>
+            <th>Сумма</th>
+            <th>Статус</th>
+            <th>Действия</th>
+        </tr>
+        </thead>
+        <tbody>
+        <!-- пример данных -->
+        <tr>
+            <td>101</td>
+            <td>Иван Петров</td>
+            <td>2025-10-29</td>
+            <td>12 450 ₽</td>
+            <td><span class="status status-process">В обработке</span></td>
+            <td>
+                <button class="btn-action btn-edit">Изменить</button>
+                <button class="btn-action btn-delete">Удалить</button>
+            </td>
+        </tr>
+        <tr>
+            <td>102</td>
+            <td>Сергей Сидоров</td>
+            <td>2025-10-28</td>
+            <td>8 990 ₽</td>
+            <td><span class="status status-done">Завершён</span></td>
+            <td>
+                <button class="btn-action btn-edit">Изменить</button>
+                <button class="btn-action btn-delete">Удалить</button>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+<!-- ===== FOOTER ===== -->
+<footer>
+    <p>© 2025 BookHaven | Управление заказами</p>
+</footer>
+</body>
+</html>

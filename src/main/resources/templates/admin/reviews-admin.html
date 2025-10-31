@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>BookHaven — Управление авторами</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://kit.fontawesome.com/a2d9d5b6b5.js" crossorigin="anonymous"></script>
+
+    <style>
+        body {
+            background: #f8f3ec;
+            color: #3b2f1d;
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* ===== HEADER ===== */
+        header {
+            background: #fffaf2;
+            border-bottom: 2px solid #e4c59e;
+            box-shadow: 0 2px 6px rgba(139,69,19,0.1);
+        }
+
+        .navbar-admin {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 3rem;
+        }
+
+        .nav-left a {
+            color: #3b2f1d;
+            text-decoration: none;
+            font-weight: 500;
+            transition: 0.3s;
+        }
+
+        .nav-left a:hover {
+            color: #b96a24;
+        }
+
+        .nav-logo {
+            font-size: 1.7rem;
+            font-weight: 700;
+            color: #b96a24;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-logout {
+            background: none;
+            border: 1px solid #b96a24;
+            color: #b96a24;
+            padding: 0.35rem 0.8rem;
+            border-radius: 6px;
+            transition: 0.3s;
+        }
+
+        .btn-logout:hover {
+            background: #b96a24;
+            color: #fff;
+        }
+
+        /* ===== MAIN ===== */
+        .container {
+            max-width: 900px;
+            margin: 2rem auto;
+            background: #fffaf2;
+            border: 1px solid #e4c59e;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 12px rgba(139,69,19,0.1);
+        }
+
+        h2 {
+            color: #8b4513;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+        }
+
+        table {
+            background: #fff;
+            color: #3b2f1d;
+            border-radius: 10px;
+            overflow: hidden;
+            width: 100%;
+        }
+
+        th {
+            background: #f5e8d8;
+            color: #8b4513;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            padding: 0.75rem;
+            border-bottom: 1px solid #e4c59e;
+        }
+
+        td {
+            padding: 0.75rem;
+            border-bottom: 1px solid #f0e2c9;
+        }
+
+        tr:hover {
+            background: #fff5e6;
+        }
+
+        /* ===== BUTTONS ===== */
+        .btn-primary {
+            background-color: #b96a24;
+            border: none;
+        }
+
+        .btn-primary:hover {
+            background-color: #8c4d18;
+        }
+
+        .btn-action {
+            font-size: 0.9rem;
+            padding: 0.3rem 0.8rem;
+            border-radius: 6px;
+            transition: 0.3s;
+            border: 1px solid transparent;
+            cursor: pointer;
+        }
+
+        .btn-edit {
+            color: #8b4513;
+            border-color: #d4a86a;
+            background-color: #fff8ef;
+        }
+
+        .btn-edit:hover {
+            background-color: #d4a86a;
+            color: #fff;
+        }
+
+        .btn-delete {
+            color: #a33636;
+            border-color: #d18b8b;
+            background-color: #fff8ef;
+        }
+
+        .btn-delete:hover {
+            background-color: #d18b8b;
+            color: #fff;
+        }
+
+        .modal-content {
+            background: #fffaf2;
+            color: #3b2f1d;
+            border-radius: 12px;
+            border: 1px solid #e4c59e;
+        }
+
+        .form-label {
+            color: #4b3c2f;
+            font-weight: 500;
+        }
+
+        input.form-control {
+            border: 1px solid #e4c59e;
+            background: #fff;
+        }
+
+        input.form-control:focus {
+            border-color: #b96a24;
+            box-shadow: 0 0 6px rgba(185,106,36,0.3);
+        }
+
+        footer {
+            text-align: center;
+            color: #7a5b34;
+            padding: 1rem;
+            background: #fff5e6;
+            border-top: 2px solid #e5cdaa;
+            margin-top: 3rem;
+        }
+    </style>
+</head>
+<body>
+
+<!-- ===== HEADER ===== -->
+<header>
+    <div class="navbar-admin">
+        <div class="nav-left">
+            <a th:href="@{/admin}"><i class="fa-solid fa-house"></i> Главная</a>
+        </div>
+
+        <div class="nav-logo">
+            <i class="fa-solid fa-book"></i> BookHaven Admin
+        </div>
+
+        <div class="nav-right">
+            <form th:action="@{/logout}" method="post" style="display:inline;">
+                <button type="submit" class="btn-logout">
+                    <i class="fa-solid fa-right-from-bracket"></i> Выход
+                </button>
+            </form>
+        </div>
+    </div>
+</header>
+
+<!-- ===== MAIN ===== -->
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2><i class="fa-solid fa-feather"></i> Управление авторами</h2>
+        <button class="btn btn-primary" onclick="showAddForm()">
+            <i class="fa-solid fa-plus"></i> Добавить автора
+        </button>
+    </div>
+
+    <div id="message"></div>
+
+    <table id="authorsTable" class="table table-hover align-middle">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Имя</th>
+            <th>Страна</th>
+            <th>Год рождения</th>
+            <th>Действия</th>
+        </tr>
+        </thead>
+        <tbody id="authorsBody"></tbody>
+    </table>
+</div>
+
+<!-- ===== MODAL ===== -->
+<div class="modal fade" id="authorModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content p-4">
+            <h5 id="modalTitle" class="mb-3">Добавить автора</h5>
+            <form id="authorForm">
+                <input type="hidden" id="authorId">
+                <div class="mb-3">
+                    <label class="form-label">Имя</label>
+                    <input type="text" id="name" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Страна</label>
+                    <input type="text" id="country" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Год рождения</label>
+                    <input type="number" id="birthYear" class="form-control" required>
+                </div>
+                <div class="d-flex justify-content-end gap-2">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <button type="submit" class="btn btn-primary">Сохранить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<footer>
+    <p>© 2025 BookHaven | Панель администратора</p>
+</footer>
+
+<!-- ===== JS ===== -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    const API_BASE = '/api/authors';
+    let modal = new bootstrap.Modal(document.getElementById('authorModal'));
+
+    $(document).ready(() => loadAuthors());
+
+    function loadAuthors() {
+        $.get(API_BASE, (data) => {
+            const tbody = $('#authorsBody').empty();
+            data.forEach(a => {
+                tbody.append(`
+                    <tr>
+                        <td>${a.id}</td>
+                        <td>${a.name}</td>
+                        <td>${a.country}</td>
+                        <td>${a.birthYear}</td>
+                        <td>
+                            <button class="btn-action btn-edit" onclick="editAuthor(${a.id})">Изменить</button>
+                            <button class="btn-action btn-delete" onclick="deleteAuthor(${a.id})">Удалить</button>
+                        </td>
+                    </tr>
+                `);
+            });
+        });
+    }
+
+    function showAddForm() {
+        $('#authorForm')[0].reset();
+        $('#authorId').val('');
+        $('#modalTitle').text('Добавить автора');
+        modal.show();
+    }
+
+    function editAuthor(id) {
+        $.get(`${API_BASE}/${id}`, (a) => {
+            $('#authorId').val(a.id);
+            $('#name').val(a.name);
+            $('#country').val(a.country);
+            $('#birthYear').val(a.birthYear);
+            $('#modalTitle').text('Редактировать автора');
+            modal.show();
+        });
+    }
+
+    $('#authorForm').submit(function(e) {
+        e.preventDefault();
+        const author = {
+            name: $('#name').val(),
+            country: $('#country').val(),
+            birthYear: parseInt($('#birthYear').val())
+        };
+        const id = $('#authorId').val();
+        const method = id ? 'PUT' : 'POST';
+        const url = id ? `${API_BASE}/${id}` : API_BASE;
+        $.ajax({
+            url: url,
+            type: method,
+            contentType: 'application/json',
+            data: JSON.stringify(author),
+            success: () => {
+                modal.hide();
+                loadAuthors();
+                showMessage('Изменения сохранены');
+            }
+        });
+    });
+
+    function deleteAuthor(id) {
+        if (!confirm('Удалить автора?')) return;
+        $.ajax({
+            url: `${API_BASE}/${id}`,
+            type: 'DELETE',
+            success: () => {
+                loadAuthors();
+                showMessage('Автор удалён');
+            }
+        });
+    }
+
+    function showMessage(msg) {
+        $('#message').html(`<div class="alert alert-success mt-3">${msg}</div>`);
+        setTimeout(() => $('#message').empty(), 3000);
+    }
+</script>
+</body>
+</html>

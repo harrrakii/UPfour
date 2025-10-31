@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Каталог книг — BookHaven</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://kit.fontawesome.com/a2d9d5b6b5.js" crossorigin="anonymous"></script>
+    <style>
+        body {
+            background: #f8f3ec;
+            color: #3b2f1d;
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ===== HEADER ===== */
+        header {
+            background: #fffaf2;
+            border-bottom: 2px solid #e4c59e;
+            box-shadow: 0 2px 6px rgba(139, 69, 19, 0.1);
+        }
+
+        .navbar-custom {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 3rem;
+        }
+
+        .nav-left, .nav-right {
+            flex: 1;
+            display: flex;
+            align-items: center;
+        }
+
+        .nav-left { justify-content: flex-start; }
+        .nav-right { justify-content: flex-end; }
+
+        .nav-logo {
+            flex: 0;
+            text-align: center;
+            font-size: 1.7rem;
+            font-weight: 700;
+            color: #b96a24;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-left a, .nav-right a {
+            color: #3b2f1d;
+            text-decoration: none;
+            font-weight: 500;
+            transition: 0.3s;
+        }
+        .nav-left a:hover, .nav-right a:hover { color: #b96a24; }
+
+        .btn-logout {
+            background: none;
+            border: 1px solid #b96a24;
+            color: #b96a24;
+            padding: 0.3rem 0.7rem;
+            border-radius: 6px;
+            transition: 0.3s;
+        }
+        .btn-logout:hover { background: #b96a24; color: #fff; }
+
+        .user-mini {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            margin-right: 1rem;
+            font-size: 0.9rem;
+        }
+        .user-mini strong { color: #8b4513; }
+        .user-mini span { font-style: italic; color: #a45c1f; }
+
+        /* ===== MAIN ===== */
+        .container {
+            width: 90%;
+            max-width: 1100px;
+            margin: 2.5rem auto;
+            text-align: center;
+        }
+
+        h2 {
+            color: #8b4513;
+            margin-bottom: 1.5rem;
+            font-weight: 700;
+        }
+
+        /* ===== BOOK GRID ===== */
+        .books-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .book-card {
+            background: #fffaf2;
+            border: 1px solid #e4c59e;
+            border-radius: 14px;
+            padding: 1.1rem 0.8rem;
+            text-align: left;
+            box-shadow: 0 3px 8px rgba(139, 69, 19, 0.08);
+            transition: all 0.3s ease;
+            max-width: 240px;
+            margin: 0 auto;
+        }
+
+        .book-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(139, 69, 19, 0.15);
+        }
+
+        .book-card h4 {
+            color: #b96a24;
+            font-size: 1rem;
+            margin-bottom: 0.4rem;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .book-info {
+            font-size: 0.85rem;
+            color: #5a4633;
+            line-height: 1.4;
+            margin-bottom: 0.7rem;
+        }
+
+        .book-info strong {
+            color: #8c4d18;
+        }
+
+        label {
+            font-weight: 500;
+            color: #4b3c2f;
+            font-size: 0.8rem;
+        }
+
+        input[type="number"] {
+            border: 1px solid #e4c59e;
+            border-radius: 8px;
+            background: #fff;
+            color: #3b2f2f;
+            font-size: 0.8rem;
+            width: 65px;
+            text-align: center;
+            padding: 0.2rem 0.4rem;
+        }
+
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #b96a24;
+            box-shadow: 0 0 5px rgba(185, 106, 36, 0.3);
+        }
+
+        .btn-main {
+            margin-top: 0.5rem;
+            background-color: #b96a24;
+            border: none;
+            color: #fff;
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: 0.3s ease;
+            width: 100%;
+        }
+
+        .btn-main:hover { background-color: #8c4d18; }
+
+        /* ===== FOOTER ===== */
+        footer {
+            background: #fff5e6;
+            color: #7a5b34;
+            text-align: center;
+            padding: 1rem;
+            border-top: 2px solid #e5cdaa;
+            margin-top: auto;
+        }
+
+        .alert {
+            border-radius: 8px;
+            margin-bottom: 1.2rem;
+        }
+        .alert-success {
+            background: rgba(185,106,36,0.12);
+            color: #8b4513;
+            border: 1px solid #e4c59e;
+        }
+        .alert-danger {
+            background: rgba(255,0,0,0.08);
+            color: #a33636;
+            border: 1px solid #e4a3a3;
+        }
+        .alert-warning {
+            background: rgba(255, 215, 0, 0.12);
+            color: #8c4d18;
+            border: 1px solid #e4c59e;
+        }
+    </style>
+</head>
+
+<body>
+<header>
+    <div class="navbar-custom">
+        <div class="nav-left">
+            <a th:href="@{/books}"><i class="fa-solid fa-book-open"></i> Каталог</a>
+        </div>
+
+        <div class="nav-logo">
+            <i class="fa-solid fa-book"></i> BookHaven
+        </div>
+
+        <div class="nav-right">
+            <div class="user-mini">
+                <strong sec:authentication="name"></strong>
+            </div>
+            <form th:action="@{/logout}" method="post" style="display:inline;">
+                <button type="submit" class="btn-logout">Выход</button>
+            </form>
+        </div>
+    </div>
+</header>
+
+<div class="container">
+    <h2><i class="fa-solid fa-layer-group"></i> Каталог книг</h2>
+    <div id="message"></div>
+    <div class="books-grid" id="booksContainer"></div>
+</div>
+
+<footer>
+    <p>© 2025 BookHaven | Каталог книг</p>
+</footer>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    const API_BOOKS = '/api/books';
+    const API_CART = '/api/cart';
+
+    $(document).ready(() => loadBooks());
+
+    function loadBooks() {
+        $.ajax({
+            url: API_BOOKS,
+            type: 'GET',
+            success: (books) => {
+                const container = $('#booksContainer').empty();
+                if (!books || books.length === 0) {
+                    $('#message').html('<div class="alert alert-warning">Нет доступных книг</div>');
+                    return;
+                }
+
+                books.forEach(book => {
+                    const btn = `<button class="btn-main" onclick="addToCart(${book.id})">
+                        <i class='fa-solid fa-cart-shopping'></i> В корзину
+                    </button>`;
+
+                    container.append(`
+                        <div class="book-card">
+                            <h4>${book.title}</h4>
+                            <div class="book-info">
+                                <p><strong>Автор:</strong> ${book.author?.name || '-'}</p>
+                                <p><strong>Издатель:</strong> ${book.publisher?.name || '-'}</p>
+                                <p><strong>Жанр:</strong> ${book.genre || '—'}</p>
+                                <p><strong>Год:</strong> ${book.year || '—'}</p>
+                                <p><strong>Цена:</strong> ${book.price} ₽</p>
+                            </div>
+                            <label>Кол-во:</label>
+                            <input type="number" id="quantity-${book.id}" min="1" max="${book.stockQuantity}" value="1">
+                            ${btn}
+                        </div>
+                    `);
+                });
+            },
+            error: () => $('#message').html('<div class="alert alert-danger">Ошибка загрузки каталога</div>')
+        });
+    }
+
+    function addToCart(bookId) {
+        const quantity = parseInt($('#quantity-' + bookId).val() || 1);
+        $.ajax({
+            url: `${API_CART}/${bookId}?quantity=${quantity}`,
+            type: 'POST',
+            success: () => {
+                $('#message').html('<div class="alert alert-success">Книга добавлена в корзину!</div>');
+                setTimeout(() => $('#message').empty(), 3000);
+            },
+            error: () => {
+                $('#message').html('<div class="alert alert-danger">Ошибка при добавлении книги</div>');
+                setTimeout(() => $('#message').empty(), 5000);
+            }
+        });
+    }
+</script>
+</body>
+</html>
